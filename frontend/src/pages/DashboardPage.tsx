@@ -1,10 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ActivityFeed } from "../components/ActivityFeed";
+import { StatusSelect } from "../components/StatusSelect";
 import { PriorityBadge, StatusBadge } from "../components/ui";
 import { useActivity } from "../hooks/useActivity";
-import { dashboardApi, taskApi } from "../lib/api";
-import { dueLabel, PRIORITY_LABEL, STATUS_LABEL, STATUSES } from "../lib/format";
-import type { Task, TaskStatus } from "../lib/types";
+import { dashboardApi } from "../lib/api";
+import { dueLabel, PRIORITY_LABEL, STATUSES } from "../lib/format";
+import type { Task } from "../lib/types";
 import { usePresence } from "../store/presence";
 
 function Card({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
@@ -22,13 +23,6 @@ export function DashboardPage() {
   const activity = useActivity();
   const onlineCount = usePresence((s) => s.onlineCount);
   const dashboard = data?.dashboard;
-  const queryClient = useQueryClient();
-  const statusMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: TaskStatus }) => taskApi.updateStatus(id, status),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    },
-  });
 
   if (!dashboard) return <p className="text-mute">Loading desk…</p>;
 
@@ -106,19 +100,7 @@ export function DashboardPage() {
             {dashboard.tasks.map((task) => (
               <div key={task.id} className="mb-2 flex items-center justify-between gap-3 rounded-lg bg-ink px-3 py-2">
                 <TaskRow task={task} />
-                <select
-                  className="rounded border border-line bg-panel px-2 py-1 text-xs"
-                  value={task.status}
-                  onChange={(event) =>
-                    statusMut.mutate({ id: task.id, status: event.target.value as TaskStatus })
-                  }
-                >
-                  {STATUSES.map((status) => (
-                    <option key={status} value={status}>
-                      {STATUS_LABEL[status]}
-                    </option>
-                  ))}
-                </select>
+                <StatusSelect task={task} />
               </div>
             ))}
           </div>

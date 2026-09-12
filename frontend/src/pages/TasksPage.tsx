@@ -1,15 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
+import { StatusSelect } from "../components/StatusSelect";
 import { PriorityBadge, StatusBadge } from "../components/ui";
 import { taskApi } from "../lib/api";
 import { dueLabel, PRIORITIES, STATUSES, STATUS_LABEL } from "../lib/format";
-import type { TaskStatus } from "../lib/types";
 import { useAuth } from "../store/auth";
 
 export function TasksPage() {
   const [params, setParams] = useSearchParams();
   const user = useAuth((s) => s.user);
-  const queryClient = useQueryClient();
   const filters = {
     status: params.get("status") ?? "",
     priority: params.get("priority") ?? "",
@@ -20,11 +19,6 @@ export function TasksPage() {
     queryKey: ["tasks", filters],
     queryFn: () => taskApi.list(filters),
   });
-  const statusMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: TaskStatus }) => taskApi.updateStatus(id, status),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["tasks"] }),
-  });
-
   function set(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -92,19 +86,9 @@ export function TasksPage() {
                   {dueLabel(task.dueDate)}
                   {task.isOverdue ? " · Overdue" : ""}
                 </td>
-                <td className="px-4 py-3">
+                <td className="overflow-visible px-4 py-3">
                   {user?.role === "DEVELOPER" || user?.role === "ADMIN" || user?.role === "PROJECT_MANAGER" ? (
-                    <select
-                      className="rounded border border-line bg-ink px-2 py-1 text-xs"
-                      value={task.status}
-                      onChange={(e) => statusMut.mutate({ id: task.id, status: e.target.value as TaskStatus })}
-                    >
-                      {STATUSES.map((status) => (
-                        <option key={status} value={status}>
-                          {STATUS_LABEL[status]}
-                        </option>
-                      ))}
-                    </select>
+                    <StatusSelect task={task} />
                   ) : (
                     <StatusBadge status={task.status} />
                   )}

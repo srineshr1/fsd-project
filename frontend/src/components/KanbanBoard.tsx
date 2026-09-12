@@ -1,14 +1,13 @@
 import { dueLabel, initials, STATUSES } from "../lib/format";
-import type { Task, TaskStatus } from "../lib/types";
+import type { Task } from "../lib/types";
+import { StatusSelect } from "./StatusSelect";
 import { PriorityBadge, StatusBadge } from "./ui";
 
 export function KanbanBoard({
   tasks,
-  onStatus,
   canChange,
 }: {
   tasks: Task[];
-  onStatus: (task: Task, status: TaskStatus) => void;
   canChange: (task: Task) => boolean;
 }) {
   return (
@@ -40,19 +39,7 @@ export function KanbanBoard({
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-line text-[10px]">
                       {task.assignee ? initials(task.assignee.name) : "—"}
                     </span>
-                    {canChange(task) && (
-                      <select
-                        className="rounded border border-line bg-panel px-1 py-0.5 text-[11px]"
-                        value={task.status}
-                        onChange={(event) => onStatus(task, event.target.value as TaskStatus)}
-                      >
-                        {STATUSES.map((value) => (
-                          <option key={value} value={value}>
-                            {value.replace("_", " ")}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                    {canChange(task) ? <StatusSelect task={task} /> : <StatusBadge status={task.status} />}
                   </div>
                 </article>
               ))}

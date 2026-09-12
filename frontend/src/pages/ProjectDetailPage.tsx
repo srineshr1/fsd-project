@@ -5,8 +5,8 @@ import { ActivityFeed } from "../components/ActivityFeed";
 import { KanbanBoard } from "../components/KanbanBoard";
 import { Button, ErrorText, Field, FormActions, Modal, inputClass, prevent } from "../components/ui";
 import { useActivity } from "../hooks/useActivity";
-import { ApiError, projectApi, taskApi, userApi } from "../lib/api";
-import type { Task, TaskPriority, TaskStatus } from "../lib/types";
+import { ApiError, projectApi, userApi } from "../lib/api";
+import type { Task, TaskPriority } from "../lib/types";
 import { useAuth } from "../store/auth";
 
 export function ProjectDetailPage() {
@@ -47,12 +47,6 @@ export function ProjectDetailPage() {
     },
   });
 
-  const statusMut = useMutation({
-    mutationFn: ({ taskId, status }: { taskId: string; status: TaskStatus }) =>
-      taskApi.updateStatus(taskId, status),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["project", id] }),
-  });
-
   if (projectQuery.error instanceof ApiError && projectQuery.error.status === 403) {
     return <p className="text-overdue">You don’t have access to this project.</p>;
   }
@@ -85,7 +79,6 @@ export function ProjectDetailPage() {
         <KanbanBoard
           tasks={project.tasks ?? []}
           canChange={canChange}
-          onStatus={(task, status) => statusMut.mutate({ taskId: task.id, status })}
         />
       </div>
       <aside className="rounded-xl border border-line bg-panel p-4">

@@ -11,6 +11,7 @@ import { ROLE_LABEL } from "../lib/format";
 import type { Role } from "../lib/types";
 import { useAuth } from "../store/auth";
 import { NotificationBell } from "./NotificationBell";
+import { ToastHost } from "./ToastHost";
 import { cn } from "./ui";
 
 const NAV = [
@@ -81,6 +82,7 @@ export function AppShell() {
         <main className="flex-1 overflow-auto p-6">
           <Outlet />
         </main>
+        <ToastHost />
       </div>
     </div>
   );

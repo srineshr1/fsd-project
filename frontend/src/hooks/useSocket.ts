@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
 import { getAccessToken } from "../lib/api";
+import { applyTaskToCaches } from "../lib/taskCache";
 import type { Activity, Notification, Task } from "../lib/types";
 import { useAuth } from "../store/auth";
 import { usePresence } from "../store/presence";
@@ -51,9 +52,11 @@ export function useSocket(): void {
       });
     });
     next.on("task:updated", (task: Task) => {
+      applyTaskToCaches(queryClient, task);
       void queryClient.invalidateQueries({ queryKey: ["tasks"] });
       void queryClient.invalidateQueries({ queryKey: ["project", task.projectId] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      void queryClient.invalidateQueries({ queryKey: ["activity"] });
     });
     next.on("notification:created", (notification: Notification) => {
       queryClient.setQueryData<{ notifications: Notification[]; unread: number }>(
