@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-ink: #0b0c0e;
+  --color-panel: #14161a;
+  --color-line: #23262b;
+  --color-paper: #edeae3;
+  --color-mute: #9a958a;
+  --color-copper: #d08c4a;
+  --color-copper-hover: #e0a15f;
+  --color-overdue: #e05d4a;
+  --color-ok: #7dab6f;
+  --color-progress: #6a8ca8;
+  --color-review: #c4a35a;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2c3036 transparent;
+}

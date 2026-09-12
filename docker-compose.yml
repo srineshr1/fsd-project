@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: velo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: velo
+      POSTGRES_PASSWORD: velo
+      POSTGRES_DB: velo
+    ports:
+      - "5432:5432"
+    volumes:
+      - velo_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U velo -d velo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: velo-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://velo:velo@db:5432/velo
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-in-production-32c}
+      JWT_ACCESS_EXPIRES: 15m
+      REFRESH_TOKEN_DAYS: "7"
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-lax}
+      PORT: "3001"
+      HOST: 0.0.0.0
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      NODE_ENV: production
+      OVERDUE_CRON: "*/1 * * * *"
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+        VITE_WS_URL: ${VITE_WS_URL:-http://localhost:3001}
+    container_name: velo-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  velo_pg:
