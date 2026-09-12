@@ -87,10 +87,10 @@ Task 1──* Activity
 ## Live demo
 
 - App (Vercel): https://fsd-project-frontend-umber.vercel.app
-- API (tunneled to this machine while it is running): https://ned-hardhearted-leandra.ngrok-free.dev
+- API (Render): https://velozity-ops-api.onrender.com
 - Repo: https://github.com/srineshr1/fsd-project
 
-If the live API tunnel is down, run the stack locally (below). For a permanent host, point `VITE_API_URL` / `VITE_WS_URL` at a long-lived Node process (Render, Railway, Fly) and set `FRONTEND_ORIGIN` plus `COOKIE_SAMESITE=none` / `COOKIE_SECURE=true`.
+The API is a free Render web service, so the first request after idle time can take ~30s to wake. WebSockets need that long-lived process; the SPA stays on Vercel.
 
 ## Local setup
 

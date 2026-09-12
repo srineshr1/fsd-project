@@ -35,6 +35,8 @@ export async function buildApp() {
 
   await registerErrorHandler(app);
 
+  app.get("/", async () => ({ ok: true }));
+  app.head("/", async (_request, reply) => reply.code(200).send());
   app.get("/api/health", async () => ({ ok: true }));
 
   await app.register(authRoutes, { prefix: "/api/auth" });

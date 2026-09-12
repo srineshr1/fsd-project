@@ -9,7 +9,9 @@ const SYSTEM_EMAIL = "system@velozity.local";
 
 export function startOverdueJob(): void {
   cron.schedule(config.overdueCron, () => {
-    void flagOverdueTasks();
+    void flagOverdueTasks().catch((err) => {
+      console.error("overdue job failed", err);
+    });
   });
 }
 

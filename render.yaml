@@ -18,7 +18,7 @@ services:
     rootDir: backend
     buildCommand: npm ci --include=dev && npx prisma generate && npm run build
     preDeployCommand: npx prisma migrate deploy
-    startCommand: node dist/src/index.js
+    startCommand: npx prisma migrate deploy && node dist/src/index.js
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
