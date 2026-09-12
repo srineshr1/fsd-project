@@ -10,10 +10,28 @@ const PRIORITIES: TaskPriority[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
 export async function getDashboard(user: AuthUser) {
   if (user.role === "ADMIN") {
-    const [totalProjects, tasks, overdueCount] = await Promise.all([
+    const overdueWhere = { isOverdue: true, status: { not: "DONE" as const } };
+    const [totalProjects, tasks, overdueCount, overdueTasks, projects] = await Promise.all([
       prisma.project.count(),
       prisma.task.groupBy({ by: ["status"], _count: { _all: true } }),
-      prisma.task.count({ where: { isOverdue: true, status: { not: "DONE" } } }),
+      prisma.task.count({ where: overdueWhere }),
+      prisma.task.findMany({
+        where: overdueWhere,
+        include: {
+          assignee: { select: { id: true, name: true, email: true } },
+          project: { select: { id: true, name: true, createdById: true } },
+        },
+        orderBy: { dueDate: "asc" },
+      }),
+      prisma.project.findMany({
+        orderBy: { updatedAt: "desc" },
+        include: {
+          client: { select: { id: true, name: true, company: true } },
+          createdBy: { select: { id: true, name: true, email: true } },
+          _count: { select: { tasks: true } },
+          tasks: { where: overdueWhere, select: { id: true } },
+        },
+      }),
     ]);
     const tasksByStatus = Object.fromEntries(STATUSES.map((status) => [status, 0])) as Record<
       TaskStatus,
@@ -29,6 +47,15 @@ export async function getDashboard(user: AuthUser) {
       overdueCount,
       onlineCount: onlineCount(),
       onlineUserIds: onlineUserIds(),
+      overdueTasks: overdueTasks.map(publicTask),
+      projects: projects.map((project) => ({
+        id: project.id,
+        name: project.name,
+        client: project.client,
+        createdBy: project.createdBy,
+        taskCount: project._count.tasks,
+        overdueCount: project.tasks.length,
+      })),
     };
   }
 

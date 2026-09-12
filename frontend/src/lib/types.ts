@@ -92,6 +92,15 @@ export type AdminDashboard = {
   overdueCount: number;
   onlineCount: number;
   onlineUserIds: string[];
+  overdueTasks: Task[];
+  projects: Array<{
+    id: string;
+    name: string;
+    client: Pick<Client, "id" | "name" | "company"> | null;
+    createdBy: Pick<User, "id" | "name" | "email"> | null;
+    taskCount: number;
+    overdueCount: number;
+  }>;
 };
 
 export type PmDashboard = {

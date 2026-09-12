@@ -33,7 +33,7 @@ export function AppShell() {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen bg-ink">
+    <div className="flex h-svh overflow-hidden bg-ink">
       <aside className="flex w-[232px] shrink-0 flex-col border-r border-line bg-panel">
         <div className="border-b border-line px-5 py-5">
           <p className="text-lg font-semibold tracking-tight">Velozity</p>
@@ -61,7 +61,7 @@ export function AppShell() {
           Internal agency desk
         </div>
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-line px-6 py-3">
           <p className="text-sm text-mute">Client project desk</p>
           <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export function AppShell() {
             </button>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex min-h-0 flex-1 flex-col overflow-auto p-6">
           <Outlet />
         </main>
         <ToastHost />

@@ -26,17 +26,50 @@ export function Button({
   );
 }
 
+export const STATUS_DOT: Record<TaskStatus, string> = {
+  TODO: "bg-mute",
+  IN_PROGRESS: "bg-progress",
+  IN_REVIEW: "bg-review",
+  DONE: "bg-ok",
+};
+
+export const STATUS_TONE: Record<TaskStatus, string> = {
+  TODO: "text-mute bg-line/60",
+  IN_PROGRESS: "text-progress bg-progress/10",
+  IN_REVIEW: "text-review bg-review/10",
+  DONE: "text-ok bg-ok/10",
+};
+
+export const STATUS_TRIGGER: Record<TaskStatus, string> = {
+  TODO: "border-line bg-panel text-mute",
+  IN_PROGRESS: "border-progress/40 bg-progress/10 text-progress",
+  IN_REVIEW: "border-review/40 bg-review/10 text-review",
+  DONE: "border-ok/40 bg-ok/10 text-ok",
+};
+
+export const STATUS_OPTION: Record<TaskStatus, string> = {
+  TODO: "text-mute",
+  IN_PROGRESS: "text-progress",
+  IN_REVIEW: "text-review",
+  DONE: "text-ok",
+};
+
+export const STATUS_OPTION_ACTIVE: Record<TaskStatus, string> = {
+  TODO: "bg-line/80",
+  IN_PROGRESS: "bg-progress/15",
+  IN_REVIEW: "bg-review/15",
+  DONE: "bg-ok/15",
+};
+
 export function StatusBadge({ status }: { status: TaskStatus }) {
-  const color =
-    status === "DONE"
-      ? "text-ok bg-ok/10"
-      : status === "IN_PROGRESS"
-        ? "text-progress bg-progress/10"
-        : status === "IN_REVIEW"
-          ? "text-review bg-review/10"
-          : "text-mute bg-line/60";
   return (
-    <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium tracking-wide", color)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium tracking-wide",
+        STATUS_TONE[status],
+      )}
+    >
+      <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[status])} />
       {STATUS_LABEL[status]}
     </span>
   );
