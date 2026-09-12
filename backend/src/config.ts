@@ -31,8 +31,16 @@ export const config = {
   refreshTokenDays: Number(process.env.REFRESH_TOKEN_DAYS ?? 7),
   cookieSecure: process.env.COOKIE_SECURE === "true",
   cookieSameSite: sameSite as "lax" | "none" | "strict",
-  frontendOrigin: process.env.FRONTEND_ORIGIN ?? "http://localhost:5173",
+  frontendOrigins: (process.env.FRONTEND_ORIGIN ?? "http://localhost:5173")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
   overdueCron: process.env.OVERDUE_CRON ?? "*/1 * * * *",
 };
+
+export function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  return config.frontendOrigins.includes(origin);
+}
 
 export const REFRESH_COOKIE = "refresh_token";

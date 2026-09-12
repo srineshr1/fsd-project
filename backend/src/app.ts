@@ -22,7 +22,13 @@ export async function buildApp() {
 
   await app.register(helmet, { contentSecurityPolicy: false });
   await app.register(cors, {
-    origin: config.frontendOrigin,
+    origin: (origin, cb) => {
+      if (!origin || config.frontendOrigins.includes(origin)) {
+        cb(null, true);
+        return;
+      }
+      cb(new Error("Origin not allowed"), false);
+    },
     credentials: true,
   });
   await app.register(cookie);

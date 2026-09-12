@@ -12,7 +12,7 @@ import { addPresence, onlineCount, onlineUserIds, removePresence } from "./prese
 export function attachSocketServer(app: FastifyInstance): Server {
   const io = new Server(app.server, {
     cors: {
-      origin: config.frontendOrigin,
+      origin: config.frontendOrigins,
       credentials: true,
     },
     pingInterval: 25000,

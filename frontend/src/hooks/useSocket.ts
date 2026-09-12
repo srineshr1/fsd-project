@@ -33,6 +33,7 @@ export function useSocket(): void {
       auth: { token },
       withCredentials: true,
       transports: ["websocket", "polling"],
+      extraHeaders: { "ngrok-skip-browser-warning": "true" },
     });
     socket = next;
 

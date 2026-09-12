@@ -13,17 +13,17 @@ const loginSchema = z.object({
 export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post("/login", async (request, reply) => {
     const body = parseBody(loginSchema, request.body);
-    return authService.login(body.email, body.password, reply);
+    return authService.login(body.email, body.password, reply, request);
   });
 
   app.post("/refresh", async (request, reply) => {
     const raw = request.cookies[REFRESH_COOKIE];
-    return authService.refresh(raw, reply);
+    return authService.refresh(raw, reply, request);
   });
 
   app.post("/logout", async (request, reply) => {
     const raw = request.cookies[REFRESH_COOKIE];
-    await authService.logout(raw, reply);
+    await authService.logout(raw, reply, request);
     return { ok: true };
   });
 

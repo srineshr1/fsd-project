@@ -38,6 +38,7 @@ async function tryRefresh(): Promise<boolean> {
   const res = await fetch(`${API}/api/auth/refresh`, {
     method: "POST",
     credentials: "include",
+    headers: { "ngrok-skip-browser-warning": "true" },
   });
   if (!res.ok) return false;
   const data = (await res.json()) as { accessToken: string; user: User };
@@ -54,6 +55,7 @@ export async function restoreSession(): Promise<User | null> {
 
 async function api<T>(path: string, init: RequestInit = {}, retried = false): Promise<T> {
   const headers = new Headers(init.headers);
+  headers.set("ngrok-skip-browser-warning", "true");
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }

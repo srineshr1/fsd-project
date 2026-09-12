@@ -1,4 +1,4 @@
-import type { FastifyReply } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { config, REFRESH_COOKIE } from "../config.js";
 import { Errors } from "../lib/errors.js";
 import { generateRefreshToken, hashRefreshToken, signAccessToken } from "../lib/jwt.js";
@@ -11,26 +11,29 @@ function refreshExpiry(): Date {
   return new Date(Date.now() + config.refreshTokenDays * 24 * 60 * 60 * 1000);
 }
 
-export function setRefreshCookie(reply: FastifyReply, raw: string): void {
-  reply.setCookie(REFRESH_COOKIE, raw, {
-    httpOnly: true,
-    secure: config.cookieSecure,
-    sameSite: config.cookieSameSite,
+function cookieFlags(request?: FastifyRequest) {
+  const origin = request?.headers.origin ?? "";
+  const crossSite = origin.startsWith("https://") && !origin.includes("localhost");
+  return {
+    httpOnly: true as const,
+    secure: crossSite || config.cookieSecure,
+    sameSite: (crossSite ? "none" : config.cookieSameSite) as "lax" | "none" | "strict",
     path: "/api/auth",
+  };
+}
+
+export function setRefreshCookie(reply: FastifyReply, raw: string, request?: FastifyRequest): void {
+  reply.setCookie(REFRESH_COOKIE, raw, {
+    ...cookieFlags(request),
     expires: refreshExpiry(),
   });
 }
 
-export function clearRefreshCookie(reply: FastifyReply): void {
-  reply.clearCookie(REFRESH_COOKIE, {
-    httpOnly: true,
-    secure: config.cookieSecure,
-    sameSite: config.cookieSameSite,
-    path: "/api/auth",
-  });
+export function clearRefreshCookie(reply: FastifyReply, request?: FastifyRequest): void {
+  reply.clearCookie(REFRESH_COOKIE, cookieFlags(request));
 }
 
-async function issueSession(user: AuthUser, reply: FastifyReply) {
+async function issueSession(user: AuthUser, reply: FastifyReply, request?: FastifyRequest) {
   const accessToken = signAccessToken(user);
   const refresh = generateRefreshToken();
   await prisma.refreshToken.create({
@@ -40,11 +43,11 @@ async function issueSession(user: AuthUser, reply: FastifyReply) {
       expiresAt: refreshExpiry(),
     },
   });
-  setRefreshCookie(reply, refresh.raw);
+  setRefreshCookie(reply, refresh.raw, request);
   return { accessToken };
 }
 
-export async function login(email: string, password: string, reply: FastifyReply) {
+export async function login(email: string, password: string, reply: FastifyReply, request?: FastifyRequest) {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (!user) {
     throw Errors.unauthorized("Invalid email or password");
@@ -59,14 +62,18 @@ export async function login(email: string, password: string, reply: FastifyReply
     name: user.name,
     role: user.role,
   };
-  const session = await issueSession(authUser, reply);
+  const session = await issueSession(authUser, reply, request);
   return {
     accessToken: session.accessToken,
     user: publicUser(user),
   };
 }
 
-export async function refresh(rawToken: string | undefined, reply: FastifyReply) {
+export async function refresh(
+  rawToken: string | undefined,
+  reply: FastifyReply,
+  request?: FastifyRequest,
+) {
   if (!rawToken) {
     throw Errors.unauthorized("Missing refresh token");
   }
@@ -76,7 +83,7 @@ export async function refresh(rawToken: string | undefined, reply: FastifyReply)
     include: { user: true },
   });
   if (!stored || stored.expiresAt < new Date()) {
-    clearRefreshCookie(reply);
+    clearRefreshCookie(reply, request);
     throw Errors.unauthorized("Refresh token is invalid or expired");
   }
 
@@ -88,19 +95,23 @@ export async function refresh(rawToken: string | undefined, reply: FastifyReply)
     name: stored.user.name,
     role: stored.user.role,
   };
-  const session = await issueSession(authUser, reply);
+  const session = await issueSession(authUser, reply, request);
   return {
     accessToken: session.accessToken,
     user: publicUser(stored.user),
   };
 }
 
-export async function logout(rawToken: string | undefined, reply: FastifyReply) {
+export async function logout(
+  rawToken: string | undefined,
+  reply: FastifyReply,
+  request?: FastifyRequest,
+) {
   if (rawToken) {
     const tokenHash = hashRefreshToken(rawToken);
     await prisma.refreshToken.deleteMany({ where: { tokenHash } });
   }
-  clearRefreshCookie(reply);
+  clearRefreshCookie(reply, request);
 }
 
 export async function createUser(input: {
