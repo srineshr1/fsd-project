@@ -3,7 +3,7 @@ import { config } from "../config.js";
 import { AppError } from "../lib/errors.js";
 
 export async function registerErrorHandler(app: FastifyInstance): Promise<void> {
-  app.setErrorHandler((err, request, reply) => {
+  app.setErrorHandler((err: unknown, request, reply) => {
     if (err instanceof AppError) {
       return reply.status(err.status).send({
         error: {
@@ -14,12 +14,16 @@ export async function registerErrorHandler(app: FastifyInstance): Promise<void> 
       });
     }
 
-    const status = (err as { statusCode?: number }).statusCode;
+    const status =
+      typeof err === "object" && err && "statusCode" in err
+        ? Number((err as { statusCode?: number }).statusCode)
+        : undefined;
+    const message = err instanceof Error ? err.message : "Invalid request";
     if (status && status >= 400 && status < 500) {
       return reply.status(status).send({
         error: {
           code: "REQUEST_ERROR",
-          message: err.message || "Invalid request",
+          message: message || "Invalid request",
         },
       });
     }
@@ -29,7 +33,7 @@ export async function registerErrorHandler(app: FastifyInstance): Promise<void> 
       error: {
         code: "INTERNAL_ERROR",
         message: "Something went wrong",
-        ...(config.isProd ? {} : { debug: err.message }),
+        ...(config.isProd ? {} : { debug: message }),
       },
     });
   });
