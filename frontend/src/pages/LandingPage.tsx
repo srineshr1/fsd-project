@@ -138,7 +138,7 @@ export function LandingPage() {
         <Product />
         <Roles />
         <Security />
-        <Cta deskTo={deskTo} deskLabel={deskLabel} />
+        <Cta signedIn={Boolean(user)} />
       </main>
 
       <footer className="border-t border-line">
@@ -556,7 +556,7 @@ function Security() {
   );
 }
 
-function Cta({ deskTo, deskLabel }: { deskTo: string; deskLabel: string }) {
+function Cta({ signedIn }: { signedIn: boolean }) {
   return (
     <section className="border-t border-line">
       <div className="mx-auto max-w-6xl px-6 py-24">
@@ -579,10 +579,10 @@ function Cta({ deskTo, deskLabel }: { deskTo: string; deskLabel: string }) {
                 admin@velozity.dev · priya@velozity.dev · ravi@velozity.dev
               </p>
               <Link
-                to={deskTo}
+                to={signedIn ? "/dashboard" : "/login"}
                 className="mt-8 inline-flex items-center gap-2 rounded-lg bg-copper px-4 py-2.5 text-sm font-medium text-ink hover:bg-copper-hover"
               >
-                {deskLabel}
+                {signedIn ? "Open desk" : "Sign in"}
                 <ArrowRight size={16} />
               </Link>
             </div>
