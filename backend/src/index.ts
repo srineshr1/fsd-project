@@ -20,7 +20,14 @@ main().catch(async (err) => {
   process.exit(1);
 });
 
-process.on("SIGINT", async () => {
+async function shutdown() {
   await prisma.$disconnect();
   process.exit(0);
+}
+
+process.on("SIGINT", () => {
+  void shutdown();
+});
+process.on("SIGTERM", () => {
+  void shutdown();
 });
