@@ -20,7 +20,10 @@ export async function buildApp() {
     },
   });
 
-  await app.register(helmet, { contentSecurityPolicy: false });
+  await app.register(helmet, {
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  });
   await app.register(cors, {
     origin: (origin, cb) => {
       if (!origin || config.frontendOrigins.includes(origin)) {
@@ -30,13 +33,14 @@ export async function buildApp() {
       cb(new Error("Origin not allowed"), false);
     },
     credentials: true,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
   });
   await app.register(cookie);
 
   await registerErrorHandler(app);
 
   app.get("/", async () => ({ ok: true }));
-  app.head("/", async (_request, reply) => reply.code(200).send());
   app.get("/api/health", async () => ({ ok: true }));
 
   await app.register(authRoutes, { prefix: "/api/auth" });
