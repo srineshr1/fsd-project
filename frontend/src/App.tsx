@@ -4,6 +4,7 @@ import { AppShell } from "./components/AppShell";
 import { useSocket } from "./hooks/useSocket";
 import { ClientsPage } from "./pages/ClientsPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ProjectDetailPage } from "./pages/ProjectDetailPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
@@ -29,6 +30,7 @@ export default function App() {
   useSocket();
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
         element={
@@ -37,14 +39,19 @@ export default function App() {
           </Protected>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/users" element={<UsersPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Fallback />} />
     </Routes>
   );
+}
+
+function Fallback() {
+  const user = useAuth((s) => s.user);
+  return <Navigate to={user ? "/dashboard" : "/"} replace />;
 }

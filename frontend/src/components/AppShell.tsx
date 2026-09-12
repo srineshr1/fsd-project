@@ -14,7 +14,7 @@ import { NotificationBell } from "./NotificationBell";
 import { cn } from "./ui";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"] },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"] },
   { to: "/projects", label: "Projects", icon: FolderKanban, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"] },
   { to: "/tasks", label: "Tasks", icon: ListTodo, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER"] },
   { to: "/clients", label: "Clients", icon: Building2, roles: ["ADMIN"] },
@@ -43,7 +43,7 @@ export function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === "/"}
+              end={item.to === "/dashboard"}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-mute hover:bg-ink hover:text-paper",
